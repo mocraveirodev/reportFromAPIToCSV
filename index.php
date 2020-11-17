@@ -7,5 +7,10 @@
             $controller = new HomeController();
             $controller->acao($rotas);
         break;
+        case "api":
+            include "controllers/HomeController.php";
+            $controller = new HomeController();
+            $controller->acao($rotas);
+        break;
     }
 ?>

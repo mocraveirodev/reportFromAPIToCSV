@@ -65,6 +65,19 @@ main{
     height: 10rem;
 }
 
+.title{
+    font-family: museo-sans900, sans-serif;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    color: #415a78;
+}
+
+.erro{
+    font-family: myriad-pro-bold,sans-serif;
+    font-size: 1.2rem;
+    color: red;
+}
+
 .btn-mex{
     background-color: #00a8a5;
     color:#fff;
