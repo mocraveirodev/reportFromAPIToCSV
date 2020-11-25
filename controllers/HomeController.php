@@ -24,8 +24,6 @@
         }
 
         private function api(){
-            var_dump($_POST);
-            die;
             unset($_SESSION['nubank']);
 
             $username = $_POST['login'];
