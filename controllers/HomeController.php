@@ -24,8 +24,6 @@
         }
 
         private function api(){
-            var_dump($_POST);
-            die;
             unset($_SESSION['nubank']);
 
             $username = $_POST['login'];
@@ -50,55 +48,58 @@
 
             $categories = $this->getCategories($jwt['body']);
             $nomeCategorias = [];
-
+            
             foreach($categories['body'] as $cat){
-                if(($cat['SectionName'] == "TOM DE VOZ _original") || ($cat['SectionName'] == "TOM DE VOZ")){
-                    array_push($nomeCategorias,$cat['BucketFullname']);
+                if($cat['Name'] == "TOM DE VOZ"){
+                    foreach($cat['ScoreComponents'] as $score){
+                        array_push($nomeCategorias,$score['Name']);
+                    }
                 }
             }
-
+            
             if($EndDate == $StartDate){
                 $EndDate = date('Y-m-d\TH:i:s', strtotime("+1 day",strtotime($EndDate)));
             }
-
+            
             $search = $this->getSearch($jwt['body'],$StartDate,$EndDate,$page);
-
+            
             if(empty($search['body'])){
                 $_SESSION['nubank'] = "resultado";
                 echo "<script>window.location.href = '/';</script>";
                 die;
             }
-
+            
             header('Cache-Control: max-age=0');
             header('Content-Type: text/csv; charset=utf-8');
             header('Content-Disposition: attachment; filename="export_CM.csv"');
             $output = fopen('php://output', 'w+');
-
-            fputcsv($output, array("Eureka ID","source_id","agente","actor_squad","actor_affiliation","activity_type","Grade - Score TOM DE VOZ","Categories","Rating"));
-
+            
+            fputcsv($output, array("Eureka ID","source_id","agente","actor_squad","actor_affiliation","activity_type","Grade - Score TOM DE VOZ","Score Component","Rating","badges_interpretation","actor_maturity","subject_id","local_start_date","local_todo_date"));
+            
             while(!empty($search['body'])){
                 foreach($search['body'] as $contato){
                     $catHit = [];
                     $weight = 0;
                     
-                    foreach($contato['Categories'] as $cat){
-                        array_push($catHit,$cat['BucketFullName']);
+                    foreach($contato['ScoreComponents'] as $cat){
+                        array_push($catHit,$cat['ScoreComponentName']);
                     }
-
+                    
                     foreach($contato['Scores'] as $score){
                         if($score['ScoreId'] == 61){
                             $weight = $score['Weight'];
                         }
                     }
-            
+                    
                     foreach($nomeCategorias as $cat){
                         if(in_array($cat, $catHit)){
-                            fputcsv($output, array($contato['Contact']['Id'],$contato['Others']['UDF_text_17'],$contato['Attributes']['Agent'],$contato['Attributes']['UDF_text_04'],$contato['Attributes']['UDF_text_13'],$contato['Attributes']['UDF_text_02'],$weight,$cat,"Hit"));
+                            fputcsv($output, array($contato['Contact']['Id'],$contato['Others']['UDF_text_17'],$contato['Attributes']['Agent'],$contato['Attributes']['UDF_text_04'],$contato['Attributes']['UDF_text_13'],$contato['Attributes']['UDF_text_02'],$weight,$cat,"Hit",$contato['Attributes']['UDF_text_05'],$contato['Attributes']['UDF_text_08'],$contato['Others']['UDF_text_01'],$contato['Attributes']['UDF_text_15'],$contato['Attributes']['UDF_text_16']));
                         }else{
-                            fputcsv($output, array($contato['Contact']['Id'],$contato['Others']['UDF_text_17'],$contato['Attributes']['Agent'],$contato['Attributes']['UDF_text_04'],$contato['Attributes']['UDF_text_13'],$contato['Attributes']['UDF_text_02'],$weight,$cat,"Miss"));
+                            fputcsv($output, array($contato['Contact']['Id'],$contato['Others']['UDF_text_17'],$contato['Attributes']['Agent'],$contato['Attributes']['UDF_text_04'],$contato['Attributes']['UDF_text_13'],$contato['Attributes']['UDF_text_02'],$weight,$cat,"Miss",$contato['Attributes']['UDF_text_05'],$contato['Attributes']['UDF_text_08'],$contato['Others']['UDF_text_01'],$contato['Attributes']['UDF_text_15'],$contato['Attributes']['UDF_text_16']));
                         }
                     }
                 }
+
                 $page++;
                 $search = $this->getSearch($jwt['body'],$StartDate,$EndDate,$page);
             }
@@ -142,7 +143,7 @@
 
         private function getCategories($jwt){
             $header = "Authorization: JWT ".$jwt."\r\nContent-type: application/json; charset=utf-8\r\n";    
-            $endpoint = "https://feapi.callminer.net/api/v2/categories";
+            $endpoint = "https://feapi.callminer.net/api/v2/scores";
 
             $resposta = $this->callAPI('GET',$header,"",$endpoint);
     

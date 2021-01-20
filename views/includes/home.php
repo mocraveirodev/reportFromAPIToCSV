@@ -25,7 +25,7 @@
     <div class="form-row">
         <div class="form-group col-md-6">
             <label for="login">Login CallMiner:</label>
-            <input type="email" class="form-control" name="login" id="login" required>
+            <input type="text" class="form-control" name="login" id="login" required>
         </div>
         <div class="form-group col-md-6">
             <label for="senha">Senha CallMiner:</label>
